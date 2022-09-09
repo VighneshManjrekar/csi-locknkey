@@ -2,7 +2,7 @@ const ErrorResponse = require("../utils/errorResponse");
 
 const errorHandler = (err, req, res, next) => {
   if (process.env.NODE_ENV == "development") {
-    console.log(err);
+    // console.log(err);
   }
   const error = { ...err };
 
@@ -14,18 +14,21 @@ const errorHandler = (err, req, res, next) => {
     const duplicate = Object.keys(error.keyPattern) + ""
     error.message = `Duplicate ${duplicate} value`;
     error.status = 400;
-    console.log(duplicate)
     new ErrorResponse(error.message, error.status);
   }
 
   // MongoError
   if (error.name == "ValidationError") {
     const errors = Object.values(err.errors).map((e) => e.properties.message);
+    console.log(err.errors)
+    // err.errors.forEach(e=>console.log(e.properties))
     error.message = errors;
     error.status = 400;
-    console.log(error.message);
     new ErrorResponse(error.message, error.status);
   }
+
+  // if(error)
+  // console.log(error.name)
 
   res
     .status(error.status || 500)

@@ -6,6 +6,7 @@ const TeamSchema = new mongoose.Schema({
     type: String,
     unique: [true, "Team name already exists"],
     required: [true, "Please enter name"],
+    match: [/^(?!\s*$).+/, "Invalid name"],
   },
   email: {
     type: String,
@@ -18,8 +19,8 @@ const TeamSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, "Please enter a password"],
     select: false,
+    match: [/^(?!\s*$).+/, "Invalid password"],
   },
   assignedColorCode: {
     type: String,
