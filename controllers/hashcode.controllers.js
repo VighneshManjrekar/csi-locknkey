@@ -58,7 +58,6 @@ exports.question = asyncHandler(async (req, res, next) => {
   const data = JSON.parse(
     fs.readFileSync(path.join(__basedir, "data", "image.json"))
   );
-  console.log(req.team.assignedColorCode);
   const questions = data[`${req.team.assignedColorCode}`];
   return res.status(200).json({ success: true, questions });
 });

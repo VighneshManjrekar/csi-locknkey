@@ -5,6 +5,7 @@ require("colors");
 const express = require("express");
 
 const hashcode = require("./routes/hashcode.routes");
+const admin = require("./routes/admin.routes");
 const connectDB = require("./configs/db");
 const errorHandler = require("./middleware/error");
 
@@ -16,6 +17,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(hashcode);
+app.use("/admin", admin);
 app.use(errorHandler);
 
 const server = app.listen(PORT, () => {
