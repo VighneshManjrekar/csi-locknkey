@@ -52,13 +52,16 @@ const TeamSchema = new mongoose.Schema({
 });
 
 TeamSchema.pre("save", async function (next) {
-  this.assignedColorCode = ["abcxyz", "abc123", "123axy", "xya12b"][
-    Math.floor(Math.random() * 5)
-  ];
-  this.password = await bcrypt.hash(this.password, 10);
-  if (this.assignedColorCode) {
-    next();
+  if (this.isModified("password")) {
+    this.assignedColorCode = ["abcxyz", "abc123", "123axy", "xya12b"][
+      Math.floor(Math.random() * 5)
+    ];
+    this.password = await bcrypt.hash(this.password, 10);
+    if (this.assignedColorCode) {
+      next();
+    }
   }
+  next();
 });
 
 TeamSchema.methods.getSignToken = function () {
