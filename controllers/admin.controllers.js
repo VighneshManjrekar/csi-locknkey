@@ -1,4 +1,5 @@
 const asyncHandler = require("../middleware/async");
+const ErrorResponse = require("../utils/errorResponse");
 const Team = require("../models/Team");
 
 // @desc    Get all team
@@ -11,9 +12,14 @@ exports.getTeams = asyncHandler(async (req, res, next) => {
 // @desc    Get winners
 // @route   GET admin/winners
 exports.getWinners = asyncHandler(async (req, res, next) => {
-  const teams = await Team.find({
-    result: { attempted: true, win: true },
-  }).sort("submissionTime");
+  const teams = await Team.aggregate([
+    {
+      $match: {
+        $and: [{ "result.win": true, "result.attempted": true }],
+      },
+    },
+    { $sort: { "result.submissionTime": 1 } },
+  ]);
   return res.status(200).json({ success: true, teams });
 });
 
@@ -29,16 +35,13 @@ exports.getTeam = asyncHandler(async (req, res, next) => {
 exports.postCheck = asyncHandler(async (req, res, next) => {
   const { teamSolution, teamId } = req.body;
   const team = await Team.findById(teamId);
-  if (teamSolution == team.assignedColorCode) {
-    await Team.findByIdAndUpdate(
-      teamId,
-      { result: { attempted: true, win: true, submissionTime: new Date() } },
-      { new: true, runValidators: true }
-    );
-    team.submissionTime = new Date();
-    await team.save();
-    return res.status(200).json({ success: true, result: "win" });
-  } else {
-    return res.status(200).json({ success: true, result: "loose" });
+  if (team.result.attempted) {
+    return next(new ErrorResponse("Already attempted", 400));
   }
+  const win = teamSolution == team.assignedColorCode;
+  team.result.attempted = true;
+  team.result.win = win;
+  team.result.submissionTime = Date.now();
+  await team.save();
+  return res.status(200).json({ success: true });
 });
